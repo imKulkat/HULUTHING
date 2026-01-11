@@ -156,3 +156,18 @@ button {
 button.danger {
   background: #b33;
 }
+/* Phase 2 Hover + Dimming Fixes */
+.profile:hover .profile-avatar {
+  transform: scale(1.12);
+  box-shadow: 0 0 20px var(--accent);
+  border-color: var(--accent);
+}
+
+.profiles:hover .profile:not(:hover) {
+  opacity: 0.45;
+}
+
+.profile:hover {
+  opacity: 1 !important;
+}
+
