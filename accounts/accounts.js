@@ -49,12 +49,16 @@ function focusProfile(i) {
 
 function selectProfile(i) {
   const p = profiles[i];
+
   if (p.isAdd) {
-    openEdit(i);
-  } else {
-    window.location.href = "index.html?profile=" + p.id;
+    openCreate();   // NEW
+    return;
   }
+
+  localStorage.setItem("mediaOS_activeProfile", p.id);
+  window.location.href = "../home/index.html";
 }
+
 
 /* Editing */
 
@@ -66,6 +70,18 @@ function openEdit(i) {
   document.getElementById("edit-avatar").value = p.avatar;
   document.getElementById("edit-color").value = p.color;
 
+  document.getElementById("edit-modal").classList.remove("hidden");
+}
+
+function openCreate() {
+  editingIndex = null;
+
+  document.getElementById("modal-title").textContent = "Create Profile";
+  document.getElementById("edit-name").value = "";
+  document.getElementById("edit-avatar").value = "";
+  document.getElementById("edit-color").value = "#4b8bff";
+
+  document.getElementById("delete-profile").style.display = "none";
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
@@ -84,11 +100,30 @@ document.getElementById("save-edit").onclick = () => {
   renderProfiles();
 };
 
-document.getElementById("delete-profile").onclick = () => {
-  const p = profiles[editingIndex];
-  if (p.isAdmin) return alert("Cannot delete admin profile");
+document.getElementById("save-edit").onclick = () => {
+  const name = document.getElementById("edit-name").value.trim();
+  const avatar = document.getElementById("edit-avatar").value.trim() || "🙂";
+  const color = document.getElementById("edit-color").value;
 
-  profiles.splice(editingIndex, 1);
+  if (!name) return alert("Name required");
+
+  if (editingIndex === null) {
+    // Creating new profile
+    profiles.splice(profiles.length - 1, 0, {
+      id: name.toLowerCase().replace(/\s+/g, "-"),
+      name,
+      avatar,
+      color
+    });
+  } else {
+    // Editing existing
+    const p = profiles[editingIndex];
+    p.name = name;
+    p.avatar = avatar;
+    p.color = color;
+  }
+
+  saveProfiles();
   closeEdit();
   renderProfiles();
 };
