@@ -1,12 +1,39 @@
-let profiles = [
+/* -----------------------------------------
+   Default Profiles (used on first run only)
+------------------------------------------ */
+
+const defaultProfiles = [
   { id: "kul", name: "Kul", avatar: "😎", color: "#4b8bff", isAdmin: true },
   { id: "guest", name: "Guest", avatar: "🙂", color: "#ff6b6b" },
   { id: "kids", name: "Kids", avatar: "🐸", color: "#00c9a7" },
   { id: "add", name: "Add Profile", avatar: "+", color: "#888", isAdd: true }
 ];
 
+/* -----------------------------------------
+   Load / Save Profiles (localStorage)
+------------------------------------------ */
+
+function loadProfiles() {
+  const saved = localStorage.getItem("mediaOS_profiles");
+  if (saved) return JSON.parse(saved);
+  return defaultProfiles;
+}
+
+function saveProfiles() {
+  localStorage.setItem("mediaOS_profiles", JSON.stringify(profiles));
+}
+
+/* -----------------------------------------
+   Active Profiles Array
+------------------------------------------ */
+
+let profiles = loadProfiles();
 let index = 0;
 let editingIndex = null;
+
+/* -----------------------------------------
+   Rendering
+------------------------------------------ */
 
 function renderProfiles() {
   const container = document.getElementById("profiles");
@@ -24,9 +51,10 @@ function renderProfiles() {
     `;
 
     el.addEventListener("click", () => selectProfile(i));
+
     el.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      openEdit(i);
+      if (!p.isAdd) openEdit(i);
     });
 
     container.appendChild(el);
@@ -34,6 +62,10 @@ function renderProfiles() {
 
   focusProfile(0);
 }
+
+/* -----------------------------------------
+   Focus + Navigation
+------------------------------------------ */
 
 function focusProfile(i) {
   index = i;
@@ -47,11 +79,22 @@ function focusProfile(i) {
   all[i].focus();
 }
 
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight") focusProfile((index + 1) % profiles.length);
+  if (e.key === "ArrowLeft") focusProfile((index - 1 + profiles.length) % profiles.length);
+  if (e.key === "Enter") selectProfile(index);
+  if (e.key === "e" && !profiles[index].isAdd) openEdit(index);
+});
+
+/* -----------------------------------------
+   Selecting Profiles
+------------------------------------------ */
+
 function selectProfile(i) {
   const p = profiles[i];
 
   if (p.isAdd) {
-    openCreate();   // NEW
+    openCreate();
     return;
   }
 
@@ -59,19 +102,26 @@ function selectProfile(i) {
   window.location.href = "../home/index.html";
 }
 
-
-/* Editing */
+/* -----------------------------------------
+   Editing Existing Profiles
+------------------------------------------ */
 
 function openEdit(i) {
   editingIndex = i;
   const p = profiles[i];
 
+  document.getElementById("modal-title").textContent = "Edit Profile";
   document.getElementById("edit-name").value = p.name;
   document.getElementById("edit-avatar").value = p.avatar;
   document.getElementById("edit-color").value = p.color;
 
+  document.getElementById("delete-profile").style.display = p.isAdmin ? "none" : "inline-block";
   document.getElementById("edit-modal").classList.remove("hidden");
 }
+
+/* -----------------------------------------
+   Creating New Profiles
+------------------------------------------ */
 
 function openCreate() {
   editingIndex = null;
@@ -85,20 +135,17 @@ function openCreate() {
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
+/* -----------------------------------------
+   Closing Modal
+------------------------------------------ */
+
 function closeEdit() {
   document.getElementById("edit-modal").classList.add("hidden");
 }
 
-document.getElementById("save-edit").onclick = () => {
-  const p = profiles[editingIndex];
-
-  p.name = document.getElementById("edit-name").value;
-  p.avatar = document.getElementById("edit-avatar").value;
-  p.color = document.getElementById("edit-color").value;
-
-  closeEdit();
-  renderProfiles();
-};
+/* -----------------------------------------
+   Save Button (Create or Edit)
+------------------------------------------ */
 
 document.getElementById("save-edit").onclick = () => {
   const name = document.getElementById("edit-name").value.trim();
@@ -116,7 +163,7 @@ document.getElementById("save-edit").onclick = () => {
       color
     });
   } else {
-    // Editing existing
+    // Editing existing profile
     const p = profiles[editingIndex];
     p.name = name;
     p.avatar = avatar;
@@ -128,15 +175,30 @@ document.getElementById("save-edit").onclick = () => {
   renderProfiles();
 };
 
+/* -----------------------------------------
+   Delete Profile
+------------------------------------------ */
+
+document.getElementById("delete-profile").onclick = () => {
+  if (editingIndex === null) return;
+
+  const p = profiles[editingIndex];
+  if (p.isAdmin) return alert("Cannot delete admin profile");
+
+  profiles.splice(editingIndex, 1);
+  saveProfiles();
+  closeEdit();
+  renderProfiles();
+};
+
+/* -----------------------------------------
+   Cancel Button
+------------------------------------------ */
+
 document.getElementById("cancel-edit").onclick = closeEdit;
 
-/* Navigation */
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowRight") focusProfile((index + 1) % profiles.length);
-  if (e.key === "ArrowLeft") focusProfile((index - 1 + profiles.length) % profiles.length);
-  if (e.key === "Enter") selectProfile(index);
-  if (e.key === "e") openEdit(index);
-});
+/* -----------------------------------------
+   Init
+------------------------------------------ */
 
 document.addEventListener("DOMContentLoaded", renderProfiles);
