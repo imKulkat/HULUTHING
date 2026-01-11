@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Who's Watching?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="accounts.css" />
+</head>
+<body>
+  <div class="background">
+    <div class="grain"></div>
+  </div>
+
+  <header class="top">
+    <div class="logo">MEDIA OS</div>
+  </header>
+
+  <main class="content">
+    <h1 class="title">Who's watching?</h1>
+
+    <div class="profiles slide-in" id="profiles"></div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div class="modal hidden" id="edit-modal">
+    <div class="modal-content">
+      <h2>Edit Profile</h2>
+
+      <label>Name</label>
+      <input id="edit-name" type="text" />
+
+      <label>Avatar</label>
+      <input id="edit-avatar" type="text" placeholder="Emoji or character" />
+
+      <label>Theme Color</label>
+      <input id="edit-color" type="color" />
+
+      <div class="modal-actions">
+        <button id="save-edit">Save</button>
+        <button id="delete-profile" class="danger">Delete</button>
+        <button id="cancel-edit">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="accounts.js"></script>
+</body>
+</html>
