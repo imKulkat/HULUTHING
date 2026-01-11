@@ -1,6 +1,6 @@
-/* -----------------------------------------
-   Default Profiles (used on first run only)
------------------------------------------- */
+/* ---------------------------------------------------------
+   DEFAULT PROFILES (used only on first run)
+--------------------------------------------------------- */
 
 const defaultProfiles = [
   { id: "kul", name: "Kul", avatar: "😎", color: "#4b8bff", isAdmin: true },
@@ -9,13 +9,25 @@ const defaultProfiles = [
   { id: "add", name: "Add Profile", avatar: "+", color: "#888", isAdd: true }
 ];
 
-/* -----------------------------------------
-   Load / Save Profiles (localStorage)
------------------------------------------- */
+/* ---------------------------------------------------------
+   LOAD / SAVE PROFILES (localStorage)
+--------------------------------------------------------- */
 
 function loadProfiles() {
   const saved = localStorage.getItem("mediaOS_profiles");
-  if (saved) return JSON.parse(saved);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+
+    // SAFETY: ensure Add Profile tile exists
+    const hasAdd = parsed.some(p => p.isAdd);
+    if (!hasAdd) parsed.push({ id: "add", name: "Add Profile", avatar: "+", color: "#888", isAdd: true });
+
+    // SAFETY: ensure Add Profile tile is last
+    parsed.sort((a, b) => (a.isAdd ? 1 : b.isAdd ? -1 : 0));
+
+    return parsed;
+  }
+
   return defaultProfiles;
 }
 
@@ -23,17 +35,17 @@ function saveProfiles() {
   localStorage.setItem("mediaOS_profiles", JSON.stringify(profiles));
 }
 
-/* -----------------------------------------
-   Active Profiles Array
------------------------------------------- */
+/* ---------------------------------------------------------
+   ACTIVE PROFILES ARRAY
+--------------------------------------------------------- */
 
 let profiles = loadProfiles();
 let index = 0;
 let editingIndex = null;
 
-/* -----------------------------------------
-   Rendering
------------------------------------------- */
+/* ---------------------------------------------------------
+   RENDER PROFILES
+--------------------------------------------------------- */
 
 function renderProfiles() {
   const container = document.getElementById("profiles");
@@ -63,9 +75,9 @@ function renderProfiles() {
   focusProfile(0);
 }
 
-/* -----------------------------------------
-   Focus + Navigation
------------------------------------------- */
+/* ---------------------------------------------------------
+   FOCUS + KEYBOARD NAVIGATION
+--------------------------------------------------------- */
 
 function focusProfile(i) {
   index = i;
@@ -86,9 +98,9 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "e" && !profiles[index].isAdd) openEdit(index);
 });
 
-/* -----------------------------------------
-   Selecting Profiles
------------------------------------------- */
+/* ---------------------------------------------------------
+   SELECT PROFILE
+--------------------------------------------------------- */
 
 function selectProfile(i) {
   const p = profiles[i];
@@ -102,9 +114,9 @@ function selectProfile(i) {
   window.location.href = "../home/index.html";
 }
 
-/* -----------------------------------------
-   Editing Existing Profiles
------------------------------------------- */
+/* ---------------------------------------------------------
+   EDIT EXISTING PROFILE
+--------------------------------------------------------- */
 
 function openEdit(i) {
   editingIndex = i;
@@ -119,9 +131,9 @@ function openEdit(i) {
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
-/* -----------------------------------------
-   Creating New Profiles
------------------------------------------- */
+/* ---------------------------------------------------------
+   CREATE NEW PROFILE
+--------------------------------------------------------- */
 
 function openCreate() {
   editingIndex = null;
@@ -135,17 +147,17 @@ function openCreate() {
   document.getElementById("edit-modal").classList.remove("hidden");
 }
 
-/* -----------------------------------------
-   Closing Modal
------------------------------------------- */
+/* ---------------------------------------------------------
+   CLOSE MODAL
+--------------------------------------------------------- */
 
 function closeEdit() {
   document.getElementById("edit-modal").classList.add("hidden");
 }
 
-/* -----------------------------------------
-   Save Button (Create or Edit)
------------------------------------------- */
+/* ---------------------------------------------------------
+   SAVE (CREATE OR EDIT)
+--------------------------------------------------------- */
 
 document.getElementById("save-edit").onclick = () => {
   const name = document.getElementById("edit-name").value.trim();
@@ -155,7 +167,7 @@ document.getElementById("save-edit").onclick = () => {
   if (!name) return alert("Name required");
 
   if (editingIndex === null) {
-    // Creating new profile
+    // CREATE NEW PROFILE
     profiles.splice(profiles.length - 1, 0, {
       id: name.toLowerCase().replace(/\s+/g, "-"),
       name,
@@ -163,7 +175,7 @@ document.getElementById("save-edit").onclick = () => {
       color
     });
   } else {
-    // Editing existing profile
+    // EDIT EXISTING PROFILE
     const p = profiles[editingIndex];
     p.name = name;
     p.avatar = avatar;
@@ -175,9 +187,9 @@ document.getElementById("save-edit").onclick = () => {
   renderProfiles();
 };
 
-/* -----------------------------------------
-   Delete Profile
------------------------------------------- */
+/* ---------------------------------------------------------
+   DELETE PROFILE
+--------------------------------------------------------- */
 
 document.getElementById("delete-profile").onclick = () => {
   if (editingIndex === null) return;
@@ -191,14 +203,14 @@ document.getElementById("delete-profile").onclick = () => {
   renderProfiles();
 };
 
-/* -----------------------------------------
-   Cancel Button
------------------------------------------- */
+/* ---------------------------------------------------------
+   CANCEL BUTTON
+--------------------------------------------------------- */
 
 document.getElementById("cancel-edit").onclick = closeEdit;
 
-/* -----------------------------------------
-   Init
------------------------------------------- */
+/* ---------------------------------------------------------
+   INIT
+--------------------------------------------------------- */
 
 document.addEventListener("DOMContentLoaded", renderProfiles);
